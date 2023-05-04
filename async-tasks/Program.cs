@@ -8,7 +8,7 @@ internal abstract class Program
     {
         Console.WriteLine("Нажмите любую кнопку чтобы выйти \n");
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         var tasks = new Task[5];
 
         for (var i = 0; i < tasks.Length; i++)
@@ -16,17 +16,23 @@ internal abstract class Program
             var threadNumber = i + 1;
 
             tasks[i] = Task.Run(async () =>
-            
             {
                 var counter = 0;
-
-                while (!cts.IsCancellationRequested)
+                try
                 {
-                    counter++;
-                    Console.WriteLine($"{threadNumber} - {counter}");
+                    while (true)
+                    {
+                        counter++;
+                        Console.WriteLine($"{threadNumber} - {counter}");
 
-                    await Task.Delay(5000, cts.Token);
+                        await Task.Delay(5000, cts.Token);
+                    }
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Task {threadNumber} stopped");
+                }
+
             }, cts.Token);
         }
 
